@@ -1,7 +1,7 @@
 
 ### setup.bx
 
-`bx-setup` is a BoxLang class designed to simplify module management for your projects. Just add the modules your project needs to a `requirements.txt` file, then run:
+`setup.bx` is a BoxLang class designed to simplify module management for your projects. Just add the modules your project needs to a `requirements.txt` file, then run:
 
 ```bash
 boxlang setup.bx
