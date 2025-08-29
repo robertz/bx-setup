@@ -1,20 +1,57 @@
 
-### setup.bx
+## bx-setup
 
-`setup.bx` is a BoxLang class designed to simplify module management for your projects. Just add the modules your project needs to a `requirements.txt` file, then run:
+Lightweight helper to ensure required BoxLang modules are installed for your project. Define dependencies in `requirements.txt`, then run a single command to install anything missing.
+
+### Prerequisites
+
+- BoxLang runtime/CLI available on your PATH.
+- The BoxLang module installer command `install-bx-module` available (used internally).
+
+### Quick Start
+
+1) Create a `requirements.txt` in your project root:
+
+```text
+# One module per line
+bx-jsoup
+bx-markdown@1.0.0   ## pin exact version
+bx-yaml             ## latest available
+
+# Blank lines and inline comments after `#` are ignored
+```
+
+2) From the project root, run:
 
 ```bash
 boxlang setup.bx
 ```
 
-The script will automatically check for missing modules and install them for you.
+The script lists installed modules, compares them to your requirements, and installs any that are missing or at a different version.
 
-You can specify modules by name to get the latest version, or include a version to install a specific one:
+### How It Works
 
-```text
-bx-jsoup
-bx-markdown@1.0.0
-bx-yaml
-```
+- Reads `requirements.txt`, ignoring blank lines and inline comments after `#`.
+- Accepts either:
+  - `module-name` (installs latest available)
+  - `module-name@x.y.z` (pins to a specific version)
+- Detects installed modules via `install-bx-module --list` and matches versions by the numeric prefix (e.g., `1.0.0` matches `1.0.0+1`).
+- Installs only what’s missing or mismatched; otherwise does nothing.
 
-This makes it easy to keep your project's dependencies up to date and ensures all required modules are available.
+### Requirements.txt Format
+
+- One dependency per line.
+- Optional exact version using `@` (e.g., `bx-markdown@1.0.0`).
+- Inline comments use `#` and may follow an entry on the same line.
+- Blank lines are allowed.
+
+### Troubleshooting
+
+- Command not found: If `install-bx-module` is unavailable, ensure the BoxLang CLI and necessary commands are installed and on your PATH.
+- Network/permissions: Installing modules requires network access and sufficient permissions.
+- File errors: If you see “Error reading requirements”, confirm `requirements.txt` exists at the project root and is readable.
+
+### Notes
+
+- Version comparison ignores build metadata after `+` when deciding if a module is up to date.
+- Version ranges are not supported; use either no version (latest) or an exact `x.y.z`.
