@@ -29,9 +29,32 @@ class {
 	}
 
 	/**
+	 * Compare semantic versions (ignores "+build" suffix).
+	 * Returns -1, 0, 1 for a<b, a==b, a>b
+	 */
+	function compareVersions(a, b) {
+		if (!isSimpleValue(a)) a = "";
+		if (!isSimpleValue(b)) b = "";
+		var aCore = a.listFirst("+");
+		var bCore = b.listFirst("+");
+		var aParts = aCore.listToArray(".");
+		var bParts = bCore.listToArray(".");
+		var maxLen = aParts.len();
+		if (bParts.len() > maxLen) maxLen = bParts.len();
+		if (maxLen < 3) maxLen = 3;
+		for (var i = 1; i <= maxLen; i++) {
+			var aNum = i <= aParts.len() ? val(aParts[i]) : 0;
+			var bNum = i <= bParts.len() ? val(bParts[i]) : 0;
+			if (aNum > bNum) return 1;
+			if (aNum < bNum) return -1;
+		}
+		return 0;
+	}
+
+	/**
 	 * Checks for missing modules and installs them if needed
 	 */
-	function checkAndInstallModules() {
+	function checkAndInstallModules(dryRun = false) {
 		// Get list of installed modules
 		var installedRaw = "";
 		bx:execute variable="installedRaw" name="install-bx-module" arguments="--list";
@@ -65,8 +88,8 @@ class {
 			if (isInstalled) {
 				if (!requiredAny) {
 					var installedVersion = installedIndex[name];
-					var installedPrefix = installedVersion.listFirst("+");
-					if (installedPrefix != requiredPrefix) {
+					// If installed < required, mark for install/upgrade
+					if (compareVersions(installedVersion, requiredPrefix) < 0) {
 						missing.push(name & "@" & requiredPrefix);
 					}
 				}
@@ -78,8 +101,12 @@ class {
 		// Install missing modules if any
 		if (missing.len()) {
 			var modulesList = missing.toList(" ");
-			printLn("Installing missing required modules: " & modulesList);
-			bx:execute variable="installedRaw" name="install-bx-module" arguments=modulesList;
+			if (dryRun) {
+				printLn("Dry run: would install/upgrade: " & modulesList);
+			} else {
+				printLn("Installing missing required modules: " & modulesList);
+				bx:execute variable="installedRaw" name="install-bx-module" arguments=modulesList;
+			}
 		} else {
 			printLn("All required modules are already installed.");
 		}
@@ -91,8 +118,16 @@ class {
 	function main(args = []) {
 		variables.required = readRequirements();
 
-		printLn("Checking for required modules...");
-		checkAndInstallModules();
+		// Parse flags
+		var dryRun = false;
+		if (isArray(args)) {
+			args.each(a => {
+				if ((a & "").trim() == "--dry-run" || (a & "").trim() == "-n") dryRun = true;
+			});
+		}
+
+		printLn("Checking for required modules..." & (dryRun ? " (dry run)" : ""));
+		checkAndInstallModules(dryRun);
 		cliExit(0);
 	}
 }

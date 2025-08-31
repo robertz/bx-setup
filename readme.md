@@ -15,10 +15,10 @@ Lightweight helper to ensure required BoxLang modules are installed for your pro
 ```text
 # One module per line
 bx-jsoup
-bx-markdown@1.0.0   ## pin exact version
+bx-markdown@1.0.0   ## require >= 1.0.0
 bx-yaml             ## latest available
 
-# Blank lines and inline comments after `#` are ignored
+# Blank lines and inline comments after `##` are ignored
 ```
 
 2) From the project root, run:
@@ -27,23 +27,28 @@ bx-yaml             ## latest available
 boxlang setup.bx
 ```
 
-The script lists installed modules, compares them to your requirements, and installs any that are missing or at a different version.
+The script lists installed modules, compares them to your requirements, and installs any that are missing or below the required minimum version.
 
 ### How It Works
 
 - Reads `requirements.txt`, ignoring blank lines and inline comments after `#`.
 - Accepts either:
   - `module-name` (installs latest available)
-  - `module-name@x.y.z` (pins to a specific version)
-- Detects installed modules via `install-bx-module --list` and matches versions by the numeric prefix (e.g., `1.0.0` matches `1.0.0+1`).
-- Installs only what’s missing or mismatched; otherwise does nothing.
+  - `module-name@x.y.z` (requires at least `x.y.z`)
+- Detects installed modules via `install-bx-module --list` and compares versions numerically (build metadata like `+1` is ignored).
+- Installs only what’s missing or below the minimum; otherwise does nothing.
 
 ### Requirements.txt Format
 
 - One dependency per line.
-- Optional exact version using `@` (e.g., `bx-markdown@1.0.0`).
-- Inline comments use `#` and may follow an entry on the same line.
+- Optional minimum version using `@` (e.g., `bx-markdown@1.0.0` means
+  the installed version must be `>= 1.0.0`).
+- Inline comments use `##` and may follow an entry on the same line.
 - Blank lines are allowed.
+
+### Dry Run
+
+- Preview actions without installing: `boxlang setup.bx --dry-run`
 
 ### Troubleshooting
 
@@ -54,4 +59,4 @@ The script lists installed modules, compares them to your requirements, and inst
 ### Notes
 
 - Version comparison ignores build metadata after `+` when deciding if a module is up to date.
-- Version ranges are not supported; use either no version (latest) or an exact `x.y.z`.
+- Version ranges are not supported; use either no version (latest) or a minimum `x.y.z` via `@`.
