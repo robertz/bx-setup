@@ -15,10 +15,10 @@ Lightweight helper to ensure required BoxLang modules are installed for your pro
 ```text
 # One module per line
 bx-jsoup
-bx-markdown@1.0.0   ## require >= 1.0.0
-bx-yaml             ## latest available
+bx-markdown@1.0.0   # require >= 1.0.0
+bx-yaml             # latest available
 
-# Blank lines and inline comments after `##` are ignored
+# Blank lines and inline comments after `#` (preferred) or a space-`#` are ignored
 ```
 
 2) From the project root, run:
@@ -31,7 +31,7 @@ The script lists installed modules, compares them to your requirements, and inst
 
 ### How It Works
 
-- Reads `requirements.txt`, ignoring blank lines and inline comments after `#`.
+- Reads `requirements.txt`, ignoring blank lines and inline comments after `##` (preferred) or a space-`#`.
 - Accepts either:
   - `module-name` (installs latest available)
   - `module-name@x.y.z` (requires at least `x.y.z`)
@@ -43,7 +43,7 @@ The script lists installed modules, compares them to your requirements, and inst
 - One dependency per line.
 - Optional minimum version using `@` (e.g., `bx-markdown@1.0.0` means
   the installed version must be `>= 1.0.0`).
-- Inline comments use `##` and may follow an entry on the same line.
+- Inline comments: use `#` (preferred), or a space-`#` to avoid clobbering URLs.
 - Blank lines are allowed.
 
 ### Dry Run

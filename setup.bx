@@ -1,6 +1,6 @@
 class {
 	// Project root directory
-	variables.cwd = expandPath(".") & "/";
+	variables.cwd = expandPath(".");
 	// List of required modules
 	variables.required = [];
 
@@ -9,13 +9,12 @@ class {
 	 */
 	function readRequirements() {
 		try {
-			var filePath = variables.cwd & "requirements.txt";
+			var filePath = expandPath("./requirements.txt");
 			var content = fileRead(filePath);
-			return content
-				.listToArray(char(10))
-				// Strip inline comments and blanks
-				.map(line => line.listFirst("##").trim())
-				.filter(line => line.trim() != "")
+				return content
+					.listToArray(char(10))
+					.map(line => line.listFirst("##").trim())
+					.filter(line => line != "")
 				.map(line => {
 					return {
 						name: line.listFirst("@").trim(),
@@ -100,13 +99,19 @@ class {
 
 		// Install missing modules if any
 		if (missing.len()) {
-			var modulesList = missing.toList(" ");
+				var modulesList = arrayToList(missing, " ");
 			if (dryRun) {
 				printLn("Dry run: would install/upgrade: " & modulesList);
-			} else {
-				printLn("Installing missing required modules: " & modulesList);
-				bx:execute variable="installedRaw" name="install-bx-module" arguments=modulesList;
-			}
+				} else {
+					printLn("Installing missing required modules: " & modulesList);
+					try {
+						bx:execute variable="installedRaw" name="install-bx-module" arguments=modulesList;
+					} catch (any e) {
+						printLn("Installation failed: " & e.message);
+						if ((installedRaw ?: "").len()) printLn(installedRaw);
+						cliExit(1);
+					}
+				}
 		} else {
 			printLn("All required modules are already installed.");
 		}
@@ -122,7 +127,7 @@ class {
 		var dryRun = false;
 		if (isArray(args)) {
 			args.each(a => {
-				if ((a & "").trim() == "--dry-run" || (a & "").trim() == "-n") dryRun = true;
+				if (a.trim() == "--dry-run" || a.trim() == "-n") dryRun = true;
 			});
 		}
 
